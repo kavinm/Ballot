@@ -8,7 +8,7 @@ dotenv.config();
 const CONTRACT_ADDRESS = "0x58ebbf51dc43a0398d154c36c4de7c88fe36fe28";
 
 async function main() {
-  const voter = process.argv[2];
+  const delegatee = process.argv[2];
   console.log("Connecting to provider...");
   const provider = new ethers.providers.AlchemyProvider(
     "maticmum",
@@ -25,17 +25,13 @@ async function main() {
     `Contract factory created, attached to ballot at address ${ballotContract.address}`
   );
 
-  console.log(`Delegating vote to ${voter}`);
-  const delegateVotetoTX = await ballotContract.delegate(voter);
+  console.log(`Delegating vote to ${delegatee}`);
+  const delegateVotetoTX = await ballotContract.delegate(delegatee);
   await delegateVotetoTX.wait();
-  const voterWeight = (await ballotContract.voters(voter)).weight;
-  const voterWeightNumber = voterWeight.toNumber();
-  if (voterWeightNumber >= 1) {
-    console.log(
-      `voting rights delegated to ${voter}, weight: ${voterWeightNumber}`
-    );
+
+  if ((await ballotContract.voters(signer.address)).delegate == delegatee) {
+    console.log(`voting rights delegated to ${delegatee}`);
   } else {
-    console.log(`voter weight: ${voterWeightNumber}`);
     throw new Error("Voter was not delegated");
   }
   console.log(`transaction hash: ${delegateVotetoTX.hash}`);
